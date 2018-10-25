@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  sut:
+    build:
+      context: .
+      dockerfile: test.dockerfile
+    image: sut
+    container_name: sut
+    # ports:
+    #   - "8080:8080"
+    volumes:
+      - .:/app
+      - /app/api/obj
+      - /app/test/obj

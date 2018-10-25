@@ -1,8 +1,9 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
-using System.Threading.Tasks;
+
 using api;
 
 namespace test
