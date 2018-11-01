@@ -1,15 +1,34 @@
-version: '2'
+version: '2.1'
 
 services:
-  sut:
+  sut: # subject under test
     build:
       context: .
-      dockerfile: test.dockerfile
+      dockerfile: dockerfile
     image: sut
     container_name: sut
-    # ports:
-    #   - "8080:8080"
+    links:
+      - mysql:mysql
     volumes:
       - .:/app
+      # ignore obj folders since they contain setting files with absolute paths on local machine
       - /app/api/obj
       - /app/test/obj
+    depends_on:
+      # wait for mysql to start before starting sut and running our tests
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql
+    container_name: "sut-mysql"
+    restart: always
+    ports: 
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_DATABASE: sut
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
