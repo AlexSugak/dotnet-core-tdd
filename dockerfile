@@ -3,6 +3,7 @@ FROM microsoft/dotnet:2.1-sdk
 ENV NUGET_XMLDOC_MODE=skip
 
 COPY ./api/api.csproj /app/api/
+COPY ./db/db.csproj /app/db/
 COPY ./test/test.csproj /app/test/
 COPY ./dotnet-core-tdd.sln /app/
 WORKDIR /app

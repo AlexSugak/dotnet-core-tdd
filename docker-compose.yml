@@ -13,6 +13,7 @@ services:
       - .:/app
       # ignore obj folders since they contain setting files with absolute paths on local machine
       - /app/api/obj
+      - /app/db/obj
       - /app/test/obj
     depends_on:
       # wait for mysql to start before starting sut and running our tests

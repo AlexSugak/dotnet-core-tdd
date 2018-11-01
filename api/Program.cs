@@ -19,8 +19,13 @@ namespace api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) 
         {
-            return WebHost.CreateDefaultBuilder(args)
-                        .UseStartup<Startup>();
+            return WebHost
+                .CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddEnvironmentVariables(prefix: "API_");
+                })
+                .UseStartup<Startup>();
         }
     }
 }
