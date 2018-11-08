@@ -68,8 +68,52 @@ namespace test
                 con.Open();
                 var comments = await con.QueryAsync<string>($"select body from comments where user = '{user}'");
                 Assert.NotEmpty(comments);
-                comments.First().Should().Be(comment, "because we expect api to save our comment");
+                comments.First().Should().Be(comment, "we expect api to save our comment");
             }
+        }
+
+        [Theory, AutoData]
+        [UseDatabase(_dbConString)]
+        public async Task getting_comments_reads_from_db(string comment1, string comment2, string user)
+        {
+            using(var con = new MySqlConnection(_dbConString))
+            {
+                con.Open();
+                var count = await con.ExecuteAsync(
+                    $"insert into comments (body, user) values (@body1, @user), (@body2, @user);",
+                    new { body1 = comment1, body2 = comment2, user = user });
+            }
+
+            var client = _factory.CreateClient();
+            var response = await client.GetAsync("/api/comments");
+            
+            response.StatusCode.Should().Be(HttpStatusCode.OK, "we expect api to return OK");
+            var actual = await response.Content.ReadAsStringAsync();
+            var expected = ("[{'id':1,'body':'" + comment1 + "','user':'" + user + "'},{'id':2,'body':'" + comment2 + "','user':'" + user + "'}]")
+                .Replace("'", "\"");
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory, AutoData]
+        [UseDatabase(_dbConString)]
+        public async Task getting_single_comment_reads_from_db(string comment1, string comment2, string user)
+        {
+            using(var con = new MySqlConnection(_dbConString))
+            {
+                con.Open();
+                var count = await con.ExecuteAsync(
+                    $"insert into comments (body, user) values (@body1, @user), (@body2, @user);",
+                    new { body1 = comment1, body2 = comment2, user = user });
+            }
+
+            var client = _factory.CreateClient();
+            var response = await client.GetAsync("/api/comments/2");
+            
+            response.StatusCode.Should().Be(HttpStatusCode.OK, "we expect api to return OK");
+            var actual = await response.Content.ReadAsStringAsync();
+            var expected = ("{'id':2,'body':'" + comment2 + "','user':'" + user + "'}")
+                .Replace("'", "\"");
+            Assert.Equal(expected, actual);
         }
     }
 }
