@@ -26,6 +26,15 @@ namespace test
             _factory = factory;
         }
 
+        private async Task ExecOnDb(Func<MySqlConnection, Task> func)
+        {
+            using(var con = new MySqlConnection(_dbConString))
+            {
+                con.Open();
+                await func(con);
+            }
+        }
+
         // break the ice
 
         [Fact]
@@ -39,12 +48,11 @@ namespace test
         [Fact]
         public async Task db_works()
         {
-            using(var con = new MySqlConnection(_dbConString))
+            await ExecOnDb(async con =>
             {
-                con.Open();
                 var version = await con.QueryAsync<string>("select version()");
                 Assert.NotEmpty(version);
-            }
+            });
         }
 
         // now let's do the spike
@@ -63,26 +71,24 @@ namespace test
             
             response.StatusCode.Should().Be(HttpStatusCode.Created, "we expect api to create new comment");
 
-            using(var con = new MySqlConnection(_dbConString))
+            await ExecOnDb(async con =>
             {
-                con.Open();
                 var comments = await con.QueryAsync<string>($"select body from comments where user = '{user}'");
                 Assert.NotEmpty(comments);
                 comments.First().Should().Be(comment, "we expect api to save our comment");
-            }
+            });
         }
 
         [Theory, AutoData]
         [UseDatabase(_dbConString)]
         public async Task getting_comments_reads_from_db(string comment1, string comment2, string user)
         {
-            using(var con = new MySqlConnection(_dbConString))
+            await ExecOnDb(async con =>
             {
-                con.Open();
                 var count = await con.ExecuteAsync(
                     $"insert into comments (body, user) values (@body1, @user), (@body2, @user);",
                     new { body1 = comment1, body2 = comment2, user = user });
-            }
+            });
 
             var client = _factory.CreateClient();
             var response = await client.GetAsync("/api/comments");
@@ -98,13 +104,12 @@ namespace test
         [UseDatabase(_dbConString)]
         public async Task getting_single_comment_reads_from_db(string comment1, string comment2, string user)
         {
-            using(var con = new MySqlConnection(_dbConString))
+            await ExecOnDb(async con =>
             {
-                con.Open();
                 var count = await con.ExecuteAsync(
                     $"insert into comments (body, user) values (@body1, @user), (@body2, @user);",
                     new { body1 = comment1, body2 = comment2, user = user });
-            }
+            });
 
             var client = _factory.CreateClient();
             var response = await client.GetAsync("/api/comments/2");
