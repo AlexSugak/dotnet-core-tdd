@@ -12,6 +12,7 @@ using Xunit;
 using api;
 using System.Net;
 using System.Text;
+using AutoFixture.Xunit2;
 
 namespace test
 {
@@ -50,12 +51,12 @@ namespace test
 
         private StringContent Json(string s) => new StringContent(s.Replace("'", "\""), Encoding.UTF8, "application/json");
 
-        [Fact]
+        [Theory, AutoData]
         [UseDatabase(_dbConString)]
-        public async Task posting_comment_writes_to_db()
+        public async Task posting_comment_writes_to_db(string comment, string user)
         {
             var client = _factory.CreateClient();
-            var comment = "hello from integration test";
+            client.DefaultRequestHeaders.Add("Bearer", new [] {$"user={user}"});
             var response = await client.PostAsync(
                 "/api/comments", 
                 Json("{'body': '" + comment + "'}"));
@@ -65,8 +66,9 @@ namespace test
             using(var con = new MySqlConnection(_dbConString))
             {
                 con.Open();
-                var version = await con.QueryAsync<string>($"select * from comments where body = '{comment}'");
-                Assert.NotEmpty(version);
+                var comments = await con.QueryAsync<string>($"select body from comments where user = '{user}'");
+                Assert.NotEmpty(comments);
+                comments.First().Should().Be(comment, "because we expect api to save our comment");
             }
         }
     }

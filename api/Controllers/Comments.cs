@@ -31,14 +31,17 @@ namespace api.Controllers
         public IActionResult Create(Comment comment)
         {
             int id;
+            string bearer = this.Request.Headers.First(h => h.Key.ToLower() == "bearer").Value;
+            // user=<name>
+            string user = bearer.Split("=").Skip(1).Take(1).First();
             using(var con = new MySqlConnection(_dbConString))
             {
                 con.Open();
 
                 var cmd = @"
-                    insert into comments (body) values (@body);
+                    insert into comments (body, user) values (@body, @user);
                     select LAST_INSERT_ID();";
-                id = con.Query<int>(cmd, new { body = comment.Body }).Single();
+                id = con.Query<int>(cmd, new { body = comment.Body, user = user }).Single();
             }
 
             return CreatedAtRoute("GetComment", new { id = id }, comment);

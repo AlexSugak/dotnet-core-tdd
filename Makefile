@@ -14,7 +14,7 @@ test: ## runs all tests in solution
 	dotnet test ./test/test.csproj
 
 test-watch: ## starts the watch and runs all tests in solution every time any file changes
-	dotnet watch test ./test/test.csproj
+	dotnet watch -p ./test/test.csproj test 
 
 rebuild-docker: ## rebuilds and restarts docker containers
 	docker-compose down
