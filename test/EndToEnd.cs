@@ -64,7 +64,7 @@ namespace test
         public async Task posting_comment_writes_to_db(string comment, string user)
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add("Bearer", new [] {$"user={user}"});
+            client.DefaultRequestHeaders.Add("Authorization", new [] {$"Bearer user={user}"});
             var response = await client.PostAsync(
                 "/api/comments", 
                 Json("{'body': '" + comment + "'}"));

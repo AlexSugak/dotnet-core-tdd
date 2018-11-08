@@ -39,9 +39,9 @@ namespace api.Controllers
         public async Task<IActionResult> Create(Comment comment)
         {
             int id;
-            string bearer = this.Request.Headers.First(h => h.Key.ToLower() == "bearer").Value;
+            string auth = this.Request.Headers.First(h => h.Key.ToLower() == "authorization").Value;
             // user=<name>
-            string user = bearer.Split("=").Skip(1).Take(1).First();
+            string user = auth.ToLower().Replace("bearer", "").Trim().Split("=").Skip(1).Take(1).First();
             using(var con = new MySqlConnection(_dbConString))
             {
                 con.Open();
