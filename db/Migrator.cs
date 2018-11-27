@@ -11,6 +11,7 @@ namespace db
     {
         private readonly MigrationRunner _runner;
 
+        #pragma warning disable 0612
         public Migrator(string connectionString)
         {
             var announcer = new ConsoleAnnouncer()

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.5.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.5.0" />
     <PackageReference Include="AutoFixture.xUnit2" Version="4.5.0" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="FluentAssertions" Version="5.4.2" />

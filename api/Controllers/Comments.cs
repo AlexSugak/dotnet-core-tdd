@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Dapper;
 using MySql.Data.MySqlClient;
+using api;
 
 namespace api.Controllers
 {
@@ -13,25 +14,27 @@ namespace api.Controllers
     public class CommentsController : ControllerBase
     {
         private const string _dbConString = "server=mysql;port=3306;database=sut;user=root;password=root";
+        private readonly ICommentReader _reader;
+        private readonly ICommentsReader _allReader;
 
-        public class Comment 
+        public CommentsController(ICommentReader reader, ICommentsReader allReader)
         {
-            public int Id { get; set; }
-            public string Body { get; set; }
-            public string User { get; set; }
+            _reader = reader;
+            _allReader = allReader;
         }
 
         // GET api/comments/{id}
         [HttpGet("{id}", Name="GetComment")]
         public async Task<ActionResult<Comment>> Get(int id)
         {
-            using(var con = new MySqlConnection(_dbConString))
-            {
-                con.Open();
-                var comment = await con.QueryFirstAsync<Comment>("select * from comments where id = @id", new { id });
+            return await _reader.Get(id);
+        }
 
-                return comment;
-            }
+        [HttpGet]
+        public async Task<ActionResult<Comment[]>> GetAll()
+        {
+            var comments = await _allReader.GetAll();
+            return comments.ToArray();
         }
 
         // POST api/comments
@@ -53,18 +56,6 @@ namespace api.Controllers
             }
 
             return CreatedAtRoute("GetComment", new { id = id }, comment);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<Comment[]>> GetAll()
-        {
-            using(var con = new MySqlConnection(_dbConString))
-            {
-                con.Open();
-                var comments = await con.QueryAsync<Comment>("select * from comments");
-
-                return comments.ToArray();
-            }
         }
     }
 }

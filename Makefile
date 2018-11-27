@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: build db-migrate test test-watch rebuild-docker log log-watch install-tools help 
+.PHONY: build db-migrate test test-watch rebuild-docker restart-docker log log-watch install-tools help 
 
 build: ## builds the solution
 	dotnet build
@@ -19,6 +19,10 @@ test-watch: ## starts the watch and runs all tests in solution every time any fi
 rebuild-docker: ## rebuilds and restarts docker containers
 	docker-compose down
 	docker-compose build --no-cache
+	docker-compose up -d
+
+restart-docker: ## restarts docker containers
+	docker-compose down
 	docker-compose up -d
 
 log: ## shows sut docker logs

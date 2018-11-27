@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using api.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -15,6 +16,8 @@ namespace api
 {
     public class Startup
     {
+        private readonly string _dbConString = "server=mysql;port=3306;database=sut;user=root;password=root";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -26,6 +29,9 @@ namespace api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddTransient<ICommentReader>(ctx => new CommentDbReader(_dbConString));
+            services.AddTransient<ICommentsReader>(ctx => new CommentDbReader(_dbConString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
