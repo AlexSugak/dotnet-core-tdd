@@ -44,7 +44,9 @@ namespace api.Controllers
             int id;
             string auth = this.Request.Headers.First(h => h.Key.ToLower() == "authorization").Value;
             // user=<name>
-            string user = auth.ToLower().Replace("bearer", "").Trim().Split("=").Skip(1).Take(1).First();
+            SimpleToken claims;
+            SimpleToken.TryParse(auth.ToLower().Replace("bearer", "").Trim(), out claims);
+            string user = claims.First(c => c.Key == "user").Value;
             using(var con = new MySqlConnection(_dbConString))
             {
                 con.Open();

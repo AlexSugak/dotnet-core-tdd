@@ -23,9 +23,11 @@ namespace test
         {
             reader.Setup(r => r.Get(id)).Returns(Task.FromResult(comment));
             var sut = new CommentsController(reader.Object, allreader.Object);
+
             var result = await sut.Get(id);
 
             reader.Verify(r => r.Get(id), Times.Exactly(1));
+            result.Value.Should().Be(comment);
         }
 
         [Theory]
@@ -44,9 +46,11 @@ namespace test
             } 
             csreader.Setup(r => r.GetAll()).Returns(Task.FromResult(comments()));
             var sut = new CommentsController(creader.Object, csreader.Object);
+            
             var result = await sut.GetAll();
 
             csreader.Verify(r => r.GetAll(), Times.Exactly(1));
+            result.Value.Should().BeEquivalentTo(comments());
         }
     }
 }
