@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="MySql.Data" Version="8.0.13" />
+    <PackageReference Include="FluentValidation" Version="8.0.101" />
   </ItemGroup>
 
 </Project>

@@ -15,25 +15,36 @@ namespace api.Controllers
     {
         private const string _dbConString = "server=mysql;port=3306;database=sut;user=root;password=root";
         private readonly ICommentReader _reader;
-        private readonly ICommentsReader _allReader;
+        private readonly ICommentWriter _writer;
+        private readonly IUserLocator _userLocator;
 
-        public CommentsController(ICommentReader reader, ICommentsReader allReader)
+        public CommentsController(
+            ICommentReader reader, 
+            ICommentWriter writer,
+            IUserLocator userLocator)
         {
             _reader = reader;
-            _allReader = allReader;
+            _writer = writer;
+            _userLocator = userLocator;
         }
 
         // GET api/comments/{id}
         [HttpGet("{id}", Name="GetComment")]
         public async Task<ActionResult<Comment>> Get(int id)
         {
-            return await _reader.Get(id);
+            var comment = await _reader.Read(id);
+            if (comment == null) 
+            {
+                return NotFound();
+            } 
+
+            return comment;
         }
 
         [HttpGet]
         public async Task<ActionResult<Comment[]>> GetAll()
         {
-            var comments = await _allReader.GetAll();
+            var comments = await _reader.ReadAll();
             return comments.ToArray();
         }
 
@@ -41,20 +52,15 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Comment comment)
         {
+            comment.User = _userLocator.Find(this.Request);
             int id;
-            string auth = this.Request.Headers.First(h => h.Key.ToLower() == "authorization").Value;
-            // user=<name>
-            SimpleToken claims;
-            SimpleToken.TryParse(auth.ToLower().Replace("bearer", "").Trim(), out claims);
-            string user = claims.First(c => c.Key == "user").Value;
-            using(var con = new MySqlConnection(_dbConString))
+            try
             {
-                con.Open();
-
-                var cmd = @"
-                    insert into comments (body, user) values (@body, @user);
-                    select LAST_INSERT_ID();";
-                id = (await con.QueryAsync<int>(cmd, new { body = comment.Body, user = user })).Single();
+                id = await _writer.Write(comment);
+            }
+            catch(ValidationException e)
+            {
+                return BadRequest(e.Message);
             }
 
             return CreatedAtRoute("GetComment", new { id = id }, comment);

@@ -30,8 +30,11 @@ namespace api
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            services.AddTransient<ICommentReader>(ctx => new CommentDbReader(_dbConString));
-            services.AddTransient<ICommentsReader>(ctx => new CommentDbReader(_dbConString));
+            var store = new CommentDbStore(_dbConString);
+            var validator = new CommentInfoValidator();
+            services.AddTransient<ICommentReader>(ctx => store);
+            services.AddTransient<ICommentWriter>(ctx => new ValidatedWriter(validator, store));
+            services.AddTransient<IUserLocator>(ctx => new BearerHeaderUserLocator());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
