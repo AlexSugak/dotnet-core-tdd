@@ -16,23 +16,25 @@ namespace api
             _dbConString = dbConString;
         }
 
-        public async Task<Comment> Read(int id)
+        public async Task<Comment> Read(string topic, int id)
         {
             using(var con = new MySqlConnection(_dbConString))
             {
                 con.Open();
-                var comment = await con.QueryAsync<Comment>("select * from comments where id = @id", new { id });
+                var comment = await con.QueryAsync<Comment>(
+                    "select * from comments where id = @id and topic = @topic ", 
+                    new { id, topic });
 
                 return comment.FirstOrDefault();
             }
         }
 
-        public async Task<IEnumerable<Comment>> ReadAll()
+        public async Task<IEnumerable<Comment>> ReadAll(string topic)
         {
             using(var con = new MySqlConnection(_dbConString))
             {
                 con.Open();
-                return await con.QueryAsync<Comment>("select * from comments");
+                return await con.QueryAsync<Comment>("select * from comments where topic = @topic", new { topic });
             }
         }
 
@@ -43,9 +45,9 @@ namespace api
                 con.Open();
 
                 var cmd = @"
-                    insert into comments (body, user) values (@body, @user);
+                    insert into comments (body, topic, user) values (@body, @topic, @user);
                     select LAST_INSERT_ID();";
-                return (await con.QueryAsync<int>(cmd, new { body = comment.Body, user = comment.User })).Single();
+                return (await con.QueryAsync<int>(cmd, new { topic = comment.Topic, body = comment.Body, user = comment.User })).Single();
             }
         }
     } 

@@ -16,38 +16,40 @@ namespace test
     {
         [Theory, AutoMoqData]
         public async Task Get_must_call_comment_reader(
+            string topic, 
             int id, 
             Comment comment,
             Mock<ICommentReader> reader,
             Mock<ICommentWriter> writer,
             Mock<IUserLocator> locator)
         {
-            reader.Setup(r => r.Read(id)).Returns(Task.FromResult(comment));
+            reader.Setup(r => r.Read(topic, id)).Returns(Task.FromResult(comment));
             var sut = new CommentsController(reader.Object, writer.Object, locator.Object);
 
-            var result = await sut.Get(id);
+            var result = await sut.Get(topic, id);
 
-            reader.Verify(r => r.Read(id), Times.Exactly(1));
+            reader.Verify(r => r.Read(topic, id), Times.Exactly(1));
             result.Value.Should().Be(comment);
         }
 
         [Theory, AutoMoqData]
         public async Task Get_must_return_404_if_reader_read_none(
+            string topic,
             int id, 
             Mock<ICommentReader> reader,
             Mock<ICommentWriter> writer,
             Mock<IUserLocator> locator)
         {
-            reader.Setup(r => r.Read(id)).Returns(Task.FromResult<Comment>(null));
+            reader.Setup(r => r.Read(topic, id)).Returns(Task.FromResult<Comment>(null));
             var sut = new CommentsController(reader.Object, writer.Object, locator.Object);
 
-            var result = await sut.Get(id);
+            var result = await sut.Get(topic, id);
             Assert.IsAssignableFrom<NotFoundResult>(result.Result);
         }
 
         [Theory, AutoMoqData]
         public async Task GetAll_must_call_comments_reader(
-            int id, 
+            string topic,
             Comment comment1,
             Comment comment2,
             Mock<ICommentReader> reader,
@@ -59,17 +61,18 @@ namespace test
                 yield return comment1;
                 yield return comment2;
             } 
-            reader.Setup(r => r.ReadAll()).Returns(Task.FromResult(comments()));
+            reader.Setup(r => r.ReadAll(topic)).Returns(Task.FromResult(comments()));
             var sut = new CommentsController(reader.Object, writer.Object, locator.Object);
             
-            var result = await sut.GetAll();
+            var result = await sut.GetAll(topic);
 
-            reader.Verify(r => r.ReadAll(), Times.Exactly(1));
+            reader.Verify(r => r.ReadAll(topic), Times.Exactly(1));
             result.Value.Should().BeEquivalentTo(comments());
         }
 
         [Theory, AutoMoqData]
         public async Task Create_must_call_comment_writer(
+            string topic,
             Comment comment,
             Mock<ICommentReader> reader,
             Mock<ICommentWriter> writer,
@@ -78,13 +81,14 @@ namespace test
             writer.Setup(w => w.Write(comment)).Returns(Task.FromResult(1));
             var sut = new CommentsController(reader.Object, writer.Object, locator.Object);
 
-            var result = await sut.Create(comment);
+            var result = await sut.Create(topic, comment);
 
             writer.Verify(r => r.Write(comment), Times.Exactly(1));
         }
 
         [Theory, AutoMoqData]
         public async Task Create_must_return_400_if_comment_not_valid(
+            string topic,
             Comment comment,
             Mock<ICommentReader> reader,
             Mock<ICommentWriter> writer,
@@ -93,7 +97,7 @@ namespace test
             writer.Setup(w => w.Write(comment)).ThrowsAsync(new ValidationException());
             var sut = new CommentsController(reader.Object, writer.Object, locator.Object);
 
-            var result = await sut.Create(comment);
+            var result = await sut.Create(topic, comment);
 
             Assert.IsAssignableFrom<BadRequestObjectResult>(result);
         }

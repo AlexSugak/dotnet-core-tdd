@@ -14,6 +14,7 @@ namespace api.Migrations
         {
             Create.Table("comments")
                 .WithColumn("id").AsInt64().PrimaryKey().Identity()
+                .WithColumn("topic").AsString().NotNullable()
                 .WithColumn("body").AsString()
                 .WithColumn("user").AsString();
         }

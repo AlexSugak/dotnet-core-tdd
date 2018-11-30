@@ -9,7 +9,7 @@ using api;
 
 namespace api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/topics/{topic}/[controller]")]
     [ApiController]
     public class CommentsController : ControllerBase
     {
@@ -30,9 +30,9 @@ namespace api.Controllers
 
         // GET api/comments/{id}
         [HttpGet("{id}", Name="GetComment")]
-        public async Task<ActionResult<Comment>> Get(int id)
+        public async Task<ActionResult<Comment>> Get(string topic, int id)
         {
-            var comment = await _reader.Read(id);
+            var comment = await _reader.Read(topic, id);
             if (comment == null) 
             {
                 return NotFound();
@@ -42,16 +42,17 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Comment[]>> GetAll()
+        public async Task<ActionResult<Comment[]>> GetAll(string topic)
         {
-            var comments = await _reader.ReadAll();
+            var comments = await _reader.ReadAll(topic);
             return comments.ToArray();
         }
 
         // POST api/comments
         [HttpPost]
-        public async Task<IActionResult> Create(Comment comment)
+        public async Task<IActionResult> Create(string topic, Comment comment)
         {
+            comment.Topic = topic;
             comment.User = _userLocator.Find(this.Request);
             int id;
             try
@@ -63,7 +64,7 @@ namespace api.Controllers
                 return BadRequest(e.Message);
             }
 
-            return CreatedAtRoute("GetComment", new { id = id }, comment);
+            return CreatedAtRoute("GetComment", new { id, topic }, comment);
         }
     }
 }
