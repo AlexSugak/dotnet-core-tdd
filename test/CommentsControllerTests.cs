@@ -14,8 +14,7 @@ namespace test
 {
     public class CommentsControllerTests
     {
-        [Theory]
-        [AutoMoqData]
+        [Theory, AutoMoqData]
         public async Task Get_must_call_comment_reader(
             int id, 
             Comment comment,
@@ -32,8 +31,7 @@ namespace test
             result.Value.Should().Be(comment);
         }
 
-        [Theory]
-        [AutoMoqData]
+        [Theory, AutoMoqData]
         public async Task Get_must_return_404_if_reader_read_none(
             int id, 
             Mock<ICommentReader> reader,
@@ -47,8 +45,7 @@ namespace test
             Assert.IsAssignableFrom<NotFoundResult>(result.Result);
         }
 
-        [Theory]
-        [AutoMoqData]
+        [Theory, AutoMoqData]
         public async Task GetAll_must_call_comments_reader(
             int id, 
             Comment comment1,
@@ -71,8 +68,7 @@ namespace test
             result.Value.Should().BeEquivalentTo(comments());
         }
 
-        [Theory]
-        [AutoMoqData]
+        [Theory, AutoMoqData]
         public async Task Create_must_call_comment_writer(
             Comment comment,
             Mock<ICommentReader> reader,
@@ -87,8 +83,7 @@ namespace test
             writer.Verify(r => r.Write(comment), Times.Exactly(1));
         }
 
-        [Theory]
-        [AutoMoqData]
+        [Theory, AutoMoqData]
         public async Task Create_must_return_400_if_comment_not_valid(
             Comment comment,
             Mock<ICommentReader> reader,
@@ -99,7 +94,7 @@ namespace test
             var sut = new CommentsController(reader.Object, writer.Object, locator.Object);
 
             var result = await sut.Create(comment);
-            
+
             Assert.IsAssignableFrom<BadRequestObjectResult>(result);
         }
     }

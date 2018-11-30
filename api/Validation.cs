@@ -37,7 +37,7 @@ namespace api
 		public CommentInfoFluentValidator()
 		{
 			RuleFor(x => x.User).NotEmpty();
-			RuleFor(x => x.Body).NotEmpty();
+			RuleFor(x => x.Body).NotEmpty().MaximumLength(140);
 		}
 	}
 

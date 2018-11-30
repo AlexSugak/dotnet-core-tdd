@@ -21,8 +21,7 @@ namespace test
             Assert.IsAssignableFrom<IEnumerable<Claim>>(tkn);
         }
         
-        [Theory]
-        [AutoData]
+        [Theory, AutoData]
         public void token_returns_passed_claims(List<Claim> claims)
         {
             var tkn = new SimpleToken(claims);
