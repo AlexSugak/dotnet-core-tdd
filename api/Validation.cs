@@ -9,8 +9,6 @@ namespace api
     [System.Serializable]
     public class ValidationException : System.Exception
     {
-        private ValidationError[] errors;
-
         public ValidationException() { }
         public ValidationException(string message) : base(message) { }
 

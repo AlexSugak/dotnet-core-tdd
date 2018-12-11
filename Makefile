@@ -13,8 +13,14 @@ db-rollback: ## rolls back all db migrations on local MySQL DB to produce clean 
 test: ## runs all tests in solution
 	dotnet test ./test/test.csproj
 
-test-watch: ## starts the watch and runs all tests in solution every time any file changes
-	dotnet watch -p ./test/test.csproj test 
+test-xunit: ## runs all tests in solution usint dotnet-xunit tool
+	cd test && dotnet xunit -fxversion 2.1.5
+
+test-watch: ## starts the file watcher and runs all tests in solution every time any file changes
+	dotnet watch -p ./test/test.csproj test --no-restore 
+
+test-xunit-watch: ## starts the file watcher and runs all tests in solution usint dotnet-xunit tool every time any file changes
+	cd test && dotnet watch xunit -fxversion 2.1.5
 
 rebuild-docker: ## rebuilds and restarts docker containers
 	docker-compose down
